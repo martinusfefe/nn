@@ -8,7 +8,7 @@ class NeuralNetwork {
   Float[][][] weights;
   Float learningrate=1.0;
   Float learningrate_bias=1.0;
-  float e = (float) Math.E;
+  float e = 2.718281828459045;
 
   NeuralNetwork(int[] nneurons_, String[] aneurons_) {
     nneurons = nneurons_;
@@ -76,11 +76,17 @@ class NeuralNetwork {
     }
     Float[] prediction=new Float[nneurons[nlayers-1]];
 
-    int i=0;
-    for (neuron n : outputLayer) {
-      n.eval_output();
-      prediction[i]=n.output;
-      i++;
+    for(int i = 1; i < layers.size();i++){
+      for(neuron nt : layers.get(i).neurons){
+        nt.input=0.0;
+        for(neuron nf : layers.get(i-1).neurons){
+          nt.input+=nf.output*weights[i-1][nf.myIndex][nt.myIndex];
+        }
+        nt.output=activation(nt.input,nt.activation);
+        if(i==layers.size()-1){
+        prediction[nt.myIndex]=nt.output;
+        }
+      }
     }
     return prediction;
   }
@@ -215,23 +221,5 @@ class NeuralNetwork {
     int myIndex;
     float myBias=1.0;
     String activation;
-
-    float eval_output() {
-      if (myLayer>0) {
-        output=activation(eval_input(), activation);
-      }
-      return output;
-    }
-
-    float eval_input() {
-      input = 0.0;
-      for (int x = 0; x<layers.get(myLayer-1).neurons.size(); x++) {
-        neuron a = layers.get(myLayer-1).neurons.get(x);
-        float weight = weights[myLayer-1][x][myIndex];
-        input+=weight*a.eval_output();
-      }
-      input+=weights[myLayer-1][layers.get(myLayer-1).neurons.size()][myIndex]*myBias;
-      return input;
-    }
   }
 }
